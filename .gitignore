@@ -1,0 +1,7 @@
+# PowerShell
+*.ps1xml
+*.psd1
+*.psm1
+
+# VS Code
+.vscode/
