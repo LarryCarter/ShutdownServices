@@ -224,20 +224,7 @@ foreach ($service in $servicesToStop) {
     Write-Log "  - $($service.Name) ($($service.DisplayName)) [Status: $($service.Status)]" "INFO"
 }
 
-# WhatIf check
-if ($WhatIfPreference) {
-    Write-Log "WhatIf mode enabled. No services will be stopped." "INFO"
-    Write-Log "=== Windows Service Shutdown Script Completed (WhatIf) ===" "INFO"
-    exit 0
-}
-
-# Confirm action
 Write-Log "" "INFO"
-$confirmation = Read-Host "Do you want to proceed with stopping these services? (Y/N)"
-if ($confirmation -notmatch '^[Yy]') {
-    Write-Log "Operation cancelled by user." "WARNING"
-    exit 0
-}
 
 # Stop services
 $successCount = 0
@@ -247,7 +234,10 @@ Write-Log "" "INFO"
 Write-Log "Beginning service shutdown..." "INFO"
 
 foreach ($service in $servicesToStop) {
-    if ($PSCmdlet.ShouldProcess($service.Name, "Stop service")) {
+    $target = "$($service.Name) ($($service.DisplayName))"
+    $action = if ($Force) { "Force stop service" } else { "Stop service gracefully with $Timeout second timeout" }
+    
+    if ($PSCmdlet.ShouldProcess($target, $action)) {
         $result = Stop-ServiceGracefully -Service $service -TimeoutSeconds $Timeout -ForceStop $Force
         if ($result) {
             $successCount++
